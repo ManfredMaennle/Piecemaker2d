@@ -35,4 +35,6 @@ If you want to contribute, please do so, any help would be appreciated.
 If you want to use this project, please do so. I would be happy to hear how it is working for you.
 
 
-cut / cutting / sawing optimization for hobby users, craftmen, carpenters, joiners, architects
+## Example result
+
+![image](https://github.com/ManfredMaennle/Piecemaker2d/blob/master/piecemaker2d_example01_result.PNG)
