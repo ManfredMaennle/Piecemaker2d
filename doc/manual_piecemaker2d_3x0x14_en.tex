@@ -1,0 +1,518 @@
+
+%%% Documentation for piecemaker2d
+%%% $Id:$
+
+\NeedsTeXFormat{LaTeX2e} 
+\documentclass[10pt,a4paper]{article}
+\usepackage[USenglish,german,french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+
+
+\newcommand{\zB}{\mbox{z.\,B.}}     %%% "zum Beispiel"
+\newcommand{\ZB}{\mbox{Z.\,B.}}     %%% "Zum Beispiel"
+\newcommand{\ia}{\mbox{i.\,a.}}     %%% "im allgemeinen"
+\newcommand{\Ia}{\mbox{I.\,a.}}     %%% "Im allgemeinen"
+\newcommand{\dH}{\mbox{d.\,h.}}     %%% "das heiﬂt"
+\newcommand{\eg}{\mbox{e.\,g.}}     %%% "exempli gratia"
+\newcommand{\Eg}{\mbox{E.\,g.}}     %%% "Exempli gratia"
+\newcommand{\ie}{\mbox{i.\,e.}}     %%% "id est"
+\newcommand{\Ie}{\mbox{I.\,e.}}     %%% "Id est"
+
+\newcommand{\english}{\selectlanguage{\USenglish}}
+\newcommand{\german}{\selectlanguage{\german}}
+\newcommand{\french}{\selectlanguage{\french}}
+\english
+
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 2pt minus 1pt}
+\frenchspacing
+\sloppy           
+
+
+%%% chapter/section layout
+%\setcounter{secnumdepth}{2}
+ 
+%%% itemize layout
+\makeatletter
+\newfont{\wasyx}{wasy10}
+\newfont{\wasyxii}{wasy10 scaled 1200}
+\newfont{\wasyxx}{wasy10 scaled 2074}
+\renewcommand{\labelitemi}{{\wasyxii\symbol{'021}}} % btria
+\renewcommand{\labelitemii}{{$\mathsurround \z@ \bullet $}} 
+\renewcommand{\labelitemiii}{{\normalfont \bfseries --}}
+\makeatother
+
+
+
+%\pagestyle{empty}
+\pagestyle{plain}
+%\pagestyle{headings}
+%\newcommand{\rcstext}{$RCSfile:$ $Revision:$ $Date:$}
+%\pagestyle{myheadings}\markboth{$\rcstext$}{$\rcstext$}
+%\setcounter{secnumdepth}{2}
+
+
+%\textheight 265mm
+%\topmargin  -20mm
+%\textwidth  180mm
+%\oddsidemargin -10.4mm 
+%\evensidemargin -10.4mm
+
+\textheight 260mm
+\topmargin  -20mm
+\textwidth  160mm
+\oddsidemargin 0mm 
+\evensidemargin 0mm
+
+
+
+\title{Cutting optimization with \texttt{piecemaker2d}\\[2ex]
+{\normalsize Manual for version 3.0.14}}
+\author{Manfred Maennle\\ \texttt{piecemaker2d@maennle.org}}
+\date{March $30^{th}$ 2020}
+\begin{document} %%% **************************************************
+\maketitle
+
+%%% ======================================================================
+\section{Introduction}
+
+The \verb|piecemaker2d| application calculates cutting instructions that
+tell you how to cut a (twodimensional) basic plate into the set of pieces you need.
+\verb|piecemaker2d| is optimizing the cutting plan in order to minimize waste.
+The tool may be useful for hobby users, craftmen, carpenters, joiners, architects, 
+and others.
+
+Originally, the tool was developed for usage under MS-DOS.
+Therefore, it is based on command line invocation and file input/output.
+The tool can easily be called from other applications.
+
+
+%%% ======================================================================
+\section{Invocation}
+
+\begin{verbatim}
+usage: piecemaker2d [options]
+options:
+  --c=FILE  Use configuration from FILE; do not load a preconfig rc file.
+  -C        print copyright- and warranty information
+  -h        print this help
+  --l=LANG  set language: LANG must be out of ENGLISH, GERMAN
+  -V        print version information and compiler settings
+\end{verbatim}
+
+When being called, \verb|piecemaker2d| does not need any options.
+Per default, configuration is read from the file \verb|piecemaker2d.cnf| 
+at the current directory. The congif file shall contain all parameters
+such as input/output files, material name and size of the basic plate, etc.
+After calculation, the tool writes all results into the output file and,
+if specified in the config file, calls another application. 
+
+If the calculation time gets too long (\eg{} for search depth too high),
+then you can interrupt the run using \verb|Ctrl-C| and restart the
+calculation with a lower search depth.
+Be aware, the also the interrupted tool calls a susequent application
+if defined so in the config file.
+
+
+%%% ----------------------------------------------------------------------
+\subsection{Configuration}
+
+Configuraion is in two steps: 
+First step is to read the pre-configuration file \verb|piecemaker2d.rc|
+which must be located in the same directory as the executable \verb|piecemaker2d.exe|.
+The pre-configuration specifies the name \verb|CONFIG_FILENAME| of the 
+main configuration file the contains the task-specific settings.
+The pre-config file may contain some more global settings.
+
+Alternatively to a pre-configuration file, you can use the comman line option
+ \verb|--c=FILE| to specify the main configuration file. In this case, the pre-config
+file is not read.
+
+The main configuration file contains all task-specific parameters, at least:
+\verb|INPUT_FILENAME|, \verb|OUTPUT_FILENAME|,
+\verb|MATERIAL_NAME|, \verb|MATERIAL_LENGTH|, and \verb|MATERIAL_WIDTH|.
+The main configuration overwrites all prio settings, \eg{} from the pre-configuration.
+
+
+%%% ----------------------------------------------------------------------
+\subsection{Format of the configuration file}
+
+The configuration file may contain the following settings, see \verb|test\example01|::
+\begin{verbatim}
+/*
+ * example configuration file
+ *
+ */
+
+REM any comment
+
+CONFIG_FILENAME =  <string> (only in pre-config file)
+INPUT_FILENAME =  <string> or "(stdin)"
+OUTPUT_FILENAME = <string> or "(stdout)"
+MAX_TRIALS = <integer> greater than 0, default 3, recommendation max 7
+MATERIAL_NAME = <string> name of the basic plate
+MATERIAL_LENGTH = <integer> greater than 0
+MATERIAL_WIDTH = <integer> greater than 0
+CUTTING_N_DIRECTIONS = <integer> 1 oder 2, default 1
+CUTTING_WIDTH = <integer> 0 or greater
+CUTTING_ALLOWANCE = <integer> 0 or greater
+PRINT_SCALE = <integer> greater than 0, default 50
+VERBOSE =  <integer> between 0 and 7
+FORM_FEED = <integer> 0 or greater
+PROGRAM_CALL_ON_EXIT = <string>
+\end{verbatim}
+
+The \verb|<string>| can be any text. If it contains special
+characters such as \verb|:|, \verb|\|, \verb|/|, etc. or spaces,
+then put the text in between double quotes \verb|"|.
+\verb|<integer>| means any positive integer number.
+
+Filenames refer to local files or may contain the pathes.
+The input filename \verb|(stdin)| denominates the standard input device,
+usually the keyboard. The output filename \verb|(stdout)| indicates the standard
+output device, usually the current console window.
+
+Search depth mus be greater than \verb|0|, it is recommended to be choosen between
+\verb|1| and \verb|7| (default is \verb|3|).
+
+The number of cutting directions must be \verb|1|, if the resulting pieces
+may not be turned by $90$ degrees. This is usually necessary for materials that
+have a directional surface or texture, such as wood grain.
+A value of \verb|2| means, that pieces may be turned by $90^\circ$. 
+If this does not disturb the texture, then choose \verb|2|, since the search algorithm
+then has more freedom in placing the pieces and calculates better results with less waste.
+
+\verb|PRINT_SCALE| defines the scale factor for the cutting pattern.
+The larger the values, the larger the print-out. The default value 50 means,
+the the cutting pattern is printed about 50 characters wide.
+
+The value \verb|FORM_FEED| indicate the number of lines printed per page.
+The program tries to print cutting patterns as a whole drawing onto prints
+by adding form feeds between the patterns. The default value \verb|0| means
+that no form feeds are printed (and, therefore, patterns may be printed
+on several pages.)
+
+The parameter \verb|VERBOSE| is optional. \verb|0|~means no output at all.
+The higher the value, the more chatty is \verb|piecemaker2d|.
+
+
+You can define a \verb|PROGRAM_CALL_ON_EXIT| that will be called after
+terminaten of \verb|piecemaker2d|. If necessary, specify reltive or full paths to the
+applications. If the string contains special characters or spaces, then put it
+into double quotes \verb|"|. The call will be executed after any exit of
+\verb|piecemaker2d|, even after an error or after user interruption.
+
+
+%%% ----------------------------------------------------------------------
+\subsection{Example configuration file}
+
+The \verb|bin| directory contains the default pre-configuration \verb|piecemaker2d.rc| that
+specifies the default name of the main configuration file:
+\begin{verbatim}
+CONFIG_FILENAME = "piecemaker2d.cnf"
+\end{verbatim}
+
+\verb|Example01| in the test directory shows a main configuration 
+example file (\verb|piecemaker2d.cnf|):
+\begin{verbatim}
+/*
+ * example configuration file
+ *
+ */
+
+INPUT_FILENAME = BILL_OF_MATERIAL.TXT
+rem OUTPUT_FILENAME = (stdout)
+OUTPUT_FILENAME = BEST_SAWING_INSTRUCTIONS.TXT
+MAX_TRIALS = 5
+MATERIAL_NAME = "WOODBOARD4"
+MATERIAL_LENGTH = 2800
+MATERIAL_WIDTH = 2050
+CUTTING_WIDTH = 4
+CUTTING_N_DIRECTIONS = 2
+CUTTING_ALLOWANCE = 10
+PRINT_SCALE = 50
+VERBOSE = 0
+rem VERBOSE = 7
+FORM_FEED = 0
+rem PROGRAM_CALL_ON_EXIT = "dir /a"
+\end{verbatim}
+
+Following the configuration \verb|piecemaker2d| reads the bill of material from
+the file \verb|BILL_OF_MATERIAL.TXT| and writes the result into the 
+file \verb|BEST_SAWING_INSTRUCTIONS.TXT|. 
+Sawing instructions are for cutting the basic material \verb|WOODBOARD4| of 
+width 2050 and length 2800 (mm or any other length unit).
+\verb|CUTTING_ALLOWANCE| adds $10~mm$ additional space to the width and length of each piece.
+The \verb|CUTTING_WIDTH| defines the width of the saw blade.
+The program call \verb|dir /a| after termination of \verb|piecemaker2d| is out-commented.
+
+The command line for a program invocation could be for example:\\
+\verb|<path>\bin\win32\piecemaker2d.exe --l=ENGLISH --c=piecemaker2d.cnf|\\
+or just\\
+\verb|<path>\bin\win32\piecemaker2d.exe|
+
+%\newpage %%% <<<<<<<<<<<=====================
+%%% ----------------------------------------------------------------------
+\subsection{Input file format}
+
+The example input file \verb|BILL_OF_MATERIAL.TXT| contaisn the complete bill
+of materials including names and sizes of each type of piece.
+
+Format:
+\begin{verbatim}
+id; item name (not used); material; length; width; number_of_pieces; comment (optional, not used)
+\end{verbatim}
+
+The input file contains at least colon separated columns.
+The first column specifies the id of the piece, the third the raw material, then length, width,
+and the number of needed pieces.
+The second column can be used to specify a name or the usage of the piece. This column
+is not used, but must contain at least one character.
+Each line may contain additional text after the 6th column. It will be ignored 
+from \verb|piecemaker2d|.
+
+The bill of material may contain pice definitions for several materials.
+\verb|piecemaker2d| uses all lines that match \verb|MATERIAL_NAME| in the third column.
+All other lines are ignored.
+If you need cutting instructions for several materials, then simply run
+the tool several times with the appropriate \verb|MATERIAL_NAME| on the same bill of
+materials file.
+
+The program does not check the bill of materials for logical errors,
+\eg{} if it contains several lines with the same id (and possibly different sizes).
+You should use unique \verb|id|s in each line. Otherwise you may have problems
+the result, because you do not know how to identify the items in the resulting
+cutting instructions.
+
+%\newpage %%% <<<<<<<<==============
+%%% ----------------------------------------------------------------------
+\subsection{Output file format}
+
+The output file contains:
+\begin{enumerate}
+\item A warning, if not all pieces are contained in the resulting cuttung instructions.
+\item Complete waste (percentage) and the total number of needed raw material plates.
+\item The bill of materials.
+\item Data of the configuration files (size and name of raw material plate, parameters) 
+\item A number of cutting instructions, containing
+  \begin{enumerate}
+  \item Serial number of the instruction,
+  \item statistical information (waste, count of investigated cutting options),
+  \item number of raw plates that mus be cut in this way,
+  \item and a geometrical depiction of the cuts to be performed.
+  \end{enumerate}
+\end{enumerate}
+
+Please check the information of the loaded paramters and bill of material in order 
+to detect possible reading errors of the inpit files.
+
+The geometrical depiction documents in a unambiguous way, how the raw plate must
+be cut into pices. The depiction shows approximately the proportions of the resulting
+pieces, denoting each piece name and size.  
+A \verb|CUTTING_ALLOWANCE|, if used, is included in the length and width.
+Pieces that have the same orientation as given in the bill of materials
+start with \verb|N| (number). Pieces turned  by~$90^\circ$
+commence with \verb|Z| (as symbol for a turned \verb|N|) and length and width
+are flipped accordingly.
+
+%\newpage %%% <<<<<<<<==============
+Example:
+\begin{verbatim}
+overall number of needed raw material pieces: 37
+
+overall waste: 20839466 sqmm = 9.81 %
+raw material:
+name: "WOODBOARD4", length x: 2800 mm, width y: 2050 mm
+
+cutting allowance: 10 mm
+cutting width (of saw blade): 4 mm
+cutting directions: 2, i.e. 90 degree turning is possible.
+(mamimum search depth for solution search: 5)
+(resulting search depth for solution search: 1)
+print scale: 50
+
+bill of material from input file:
+name: "n10a", length: 2118 mm, width: 0422 mm, amount: 50
+name: "n10b", length: 2118 mm, width: 0422 mm, amount: 50
+name: "n50a", length: 1910 mm, width: 0422 mm, amount: 11
+name: "n50b", length: 1910 mm, width: 0422 mm, amount: 11
+name: "n12a", length: 1950 mm, width: 0184 mm, amount: 2
+name: "n12b", length: 2000 mm, width: 0184 mm, amount: 7
+name: "n12c", length: 1450 mm, width: 0184 mm, amount: 64
+name: "n52a", length: 1450 mm, width: 0189 mm, amount: 13
+name: "n52b", length: 2000 mm, width: 0189 mm, amount: 1
+name: "n13a", length: 1950 mm, width: 0230 mm, amount: 2
+name: "n13b", length: 2000 mm, width: 0230 mm, amount: 8
+name: "n13c", length: 1450 mm, width: 0230 mm, amount: 77
+name: "n14a", length: 1950 mm, width: 0080 mm, amount: 2
+name: "n14b", length: 2000 mm, width: 0080 mm, amount: 8
+name: "n14c", length: 1350 mm, width: 0080 mm, amount: 77
+name: "n15a", length: 0394 mm, width: 0173 mm, amount: 122
+
+cutting instructions no. 1:
+(waste: 273664 qmm = 4.77 %; 0000302 search trials)
+amount: 4
+
+*-------------------------------------------------------*
+|Nn10a                                  |Nn15a   |Zn13b||
+|L2128                                  |L0404   |L0240||
+|W0432                                  |W0183   |W2010||
+|                                       |--------|     ||
+|                                       |Nn15a   |     ||
+|                                       |L0404   |     ||
+|---------------------------------------|W0183   |     ||
+|Nn10a                                  |--------|     ||
+|L2128                                  |Nn15a   |     ||
+|W0432                                  |L0404   |     ||
+|                                       |W0183   |     ||
+|                                       |--------|     ||
+|                                       |Nn15a   |     ||
+|---------------------------------------|L0404   |     ||
+|Nn10a                                  |W0183   |     ||
+|L2128                                  |--------|     ||
+|W0432                                  |Nn15a   |     ||
+|                                       |L0404   |     ||
+|                                       |W0183   |     ||
+|                                       |--------|     ||
+|---------------------------------------|Nn15a   |     ||
+|Nn10a                                  |L0404   |     ||
+|L2128                                  |W0183   |     ||
+|W0432                                  |--------|     ||
+|                                       |Nn15a   |-----||
+|                                       |L0404   |     ||
+|                                       |W0183   |     ||
+|---------------------------------------|--------|     ||
+|Nn13b                               |  |Nn15a   |     ||
+|L2010                               |  |L0404   |     ||
+|W0240                               |  |W0183   |     ||
+|------------------------------------|  |--------|     ||
+|                                    |  |Nn15a   |     ||
+|                                    |  |L0404   |     ||
+|                                    |  |W0183   |     ||
+|                                    |  |--------|     ||
+|                                    |  |Nn15a   |     ||
+|                                    |  |L0404   |     ||
+|                                    |  |W0183   |     ||
+|                                    |  |--------|     ||
+*-------------------------------------------------------*
+
+...
+\end{verbatim}
+
+The example shows the first (from 17) cutting instructions in the
+directory \verb|example01|. The solid lines depict, whichs cuts must be
+peformed first, second, and so on. 
+Each field states the name, length and width of the piece, in which a possible 
+cutting allowance is already included.
+Pieces starting with \verb|Z| are to be turned by~$90^\circ$ (length and width
+are exchanged accordingly).
+The \verb|amount| tells you, how many raw material plates are to be cut
+following the instruction.
+
+All information read (parameters, name and size of raw material, bill of material) 
+are shown ahead of the cutting instructions. Here, the sizes of the bill of material
+do \emph{not yet} include the cutting allowance.
+
+%Am Ende der Ausgabe erfolgt eine Berechnung des Gesamtverschnitts
+%f¸r die Summe aller Schnittvorlagen.
+
+%%% ======================================================================
+\section{Bug fixing}
+
+\begin{description}
+\item[Program does not start]
+  The program cannot start if it does not find the configuration file which is
+  defined by the pre-configuration or by a command line parameter. It then gives
+  an error message.
+\item[Program does not terminate]
+  Computational effort rises by the number of pieces in the bill of material.
+  If computation takes too much time, then interrupt the program by
+  typing \verb|Ctrl-C| in the command line window. 
+  To avoid this, please reduce the parameter \verb|MAX_TRIALS|.
+  A value of~5 is a good choice, it may be reduced down to~1.
+  Please be aware, the a lower parameter \verb|MAX_TRIALS| may yield worse
+  result, \ie{} a solution that produces more waste.
+\end{description}
+
+Please report errors or write comments and suggestions to my \texttt{piecemaker2d@maennle.org}
+email address.
+
+%%% ======================================================================
+\section{Algorithm}
+
+The program \verb|piecemaker2d| implements a two-tiered
+search algorithm for a solution (cutting direction) that
+produces the least waste, \ie{} that needs the least number
+of raw material plates. 
+
+The inner tier searches a good cutting layout of 
+\emph{a single} raw material plate with respect to the bill of material.
+The outer tier repeats the inner search loop until all pieces of the bill of
+materials are covered.
+
+A good cutting layout of an original raw plate is computed by a depth search as follows: 
+\begin{itemize}
+\item Determine the biggest piece that fits in the original plate.
+\item Determine the cutting instruction in order to cut out this piece
+  %(mit den Moeglichkeiten \texttt{L}, \texttt{T}, \texttt{-},
+  %\texttt{|} und \texttt{o})
+\item Repeat these steps for all the remaining parts. (\Ie{}, the remaining parts are treated
+  like smaller original raw plates in step one.)
+\end{itemize}
+
+Under some circumstances, the algorithms compares several possibilities
+and layouts. The number of trials may be limited using the parameter \verb|MAX_TRIALS|.
+The more trials, the better the result (but cutting layouts may become more complex).
+As the algorithm performs a depth search, computational effort rises exponentially with
+the maximum trails per search step. 
+
+For practical problems, the algorithm yields very good results at reasonable time 
+of computation. Nevertheless, there is no guarantee the the algorithms finds the
+optimal solution, even with high \verb|MAX_TRIALS|.
+
+For this example:
+\begin{verbatim}
+original [1400x500]
+pieces 4
+2 [400x400]
+2 [300x300]
+1 [600x100]
+1 [500x200]
+\end{verbatim}
+(with cutting allowance and cutting width equal to~0) 
+the inner optimizsation loop does not fiend the best solution.
+Obviously, all pieces fit into one original raw plate. The algorithm does
+not find this solution, because it always uses one piece at a time
+in order to try the next cut.
+It should investigate more possibilities, in this case a vertical cut at length~800.
+
+Moreover, even an optimal layout of each single cutting instruction
+may not yield a globally optimum, as shown in the following example:
+\begin{verbatim}
+original [1500x500]
+pieces 2
+30 [300x500]
+30 [200x400]
+\end{verbatim}
+Ten original raw plates are sufficient.
+But the algorithm finds cutting instructions using eleven plates
+because it first tries to place the big pieces and afterwards the smaller ones.
+
+
+Many tests and real usage of the program show that these cases do not
+often occur in practical usage. To say it in other words:
+The algorithm may not always find the optimal solution, but it always
+finds a very good one.
+
+\end{document} %%% **************************************************
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% $Log: $
+% 
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%%% EOF

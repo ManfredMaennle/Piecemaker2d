@@ -1,0 +1,555 @@
+
+%%% Dokumentation zu piecemaker2d
+%%% $Id:$
+
+\NeedsTeXFormat{LaTeX2e} 
+\documentclass[10pt,a4paper]{article}
+\usepackage[german]{babel}
+%\usepackage[USenglish,german,french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+
+\newcommand{\zB}{\mbox{z.\,B.}}     %%% "zum Beispiel"
+\newcommand{\ZB}{\mbox{Z.\,B.}}     %%% "Zum Beispiel"
+\newcommand{\ia}{\mbox{i.\,a.}}     %%% "im allgemeinen"
+\newcommand{\Ia}{\mbox{I.\,a.}}     %%% "Im allgemeinen"
+\newcommand{\dH}{\mbox{d.\,h.}}     %%% "das heißt"
+
+%\newcommand{\english}{\selectlanguage{\USenglish}}
+\newcommand{\german}{\selectlanguage{\german}}
+%\newcommand{\french}{\selectlanguage{\french}}
+\german
+
+
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 2pt minus 1pt}
+\frenchspacing
+\sloppy           
+
+%%% chapter/section layout
+%\setcounter{secnumdepth}{2}
+ 
+%%% itemize layout
+\makeatletter
+\newfont{\wasyx}{wasy10}
+\newfont{\wasyxii}{wasy10 scaled 1200}
+\newfont{\wasyxx}{wasy10 scaled 2074}
+\renewcommand{\labelitemi}{{\wasyxii\symbol{'021}}} % btria
+\renewcommand{\labelitemii}{{$\mathsurround \z@ \bullet $}} 
+\renewcommand{\labelitemiii}{{\normalfont \bfseries --}}
+\makeatother
+
+
+%\pagestyle{empty}
+\pagestyle{plain}
+%\pagestyle{headings}
+%\newcommand{\rcstext}{$RCSfile:$ $Revision:$ $Date:$}
+%\pagestyle{myheadings}\markboth{$\rcstext$}{$\rcstext$}
+%\setcounter{secnumdepth}{2}
+
+
+%\textheight 265mm
+%\topmargin  -20mm
+%\textwidth  180mm
+%\oddsidemargin -10.4mm 
+%\evensidemargin -10.4mm
+
+\textheight 260mm
+\topmargin  -20mm
+\textwidth  160mm
+\oddsidemargin 0mm 
+\evensidemargin 0mm
+
+
+
+\title{Zuschnittsoptimierung mit \texttt{piecemaker2d}\\[2ex]
+{\normalsize Manual für Version 3.0.14}}
+\author{Manfred Männle\\ \texttt{piecemaker2d@maennle.org}}
+\date{30. März 2020}
+\begin{document} %%% **************************************************
+\maketitle
+
+%%% ======================================================================
+\section{Einleitung}
+
+Das Programm \verb|piecemaker2d| berechnet eine Reihe von Schnittanweisungen,
+mit denen zweidimensionale Grundplatten (gleicher Größe)
+in eine vorgegebene Menge an Teilstücken (verschiedener Größen)
+zerlegt werden. Der Verschnitt soll dabei möglichst gering bleiben.
+Potentielle Nutzer reichen von Hobby-Handwerkern bis hin zu professionellen
+Schreinern, Innenausstattern und Architekten.
+
+Das Tool wurde ursprünglich zur Verwendung unter MS-DOS entwickelt und 
+basiert deshalb auf Kommandozeile. Die Ein-/Ausgabe ist komplett dateibasiert und
+zum Aufruf durch andere Applikationen geeignet.
+
+
+%%% ======================================================================
+\section{Aufruf}
+
+\begin{verbatim}
+Aufruf: piecemaker2d [Optionen]
+Optionen:
+  --c=FILE  Nutze FILE als Konfigurationsdatei; eine Praekonfigurations rc-Datei
+            wird nicht ausgewertet.
+  -C        zeige Copyright und Garantieinformation
+  -h        drucke diese Hilfe
+  --l=LANG  waehle Sprache: LANG kann sein: ENGLISH, GERMAN
+  -V        zeige Versions- und Kompilierinformation
+\end{verbatim}
+
+Der Aufruf von \verb|piecemaker2d| erfolgt in der Regel ohne Optionen.
+Es wird standardmäßig die Konfigurationsdatei \verb|piecemaker2d.cnf| 
+im aktuellen Verzeichnis gelesen. Dort stehen alle notwendigen Parametrierungen
+wie die Ein-/Ausgabedateien und Materialgrößen.
+Nach der Berechnung gibt das Programm die Ergebnisse aus,
+terminiert und ruft gegebenenfalls ein in der Konfigurationsdatei
+angegebenes Nachfolgeprogramm auf.
+
+Sollte sich während der Berechnung zeigen, daß die Rechenzeit
+zu lange wird (\zB{} bei zu groß gewählter Suchtiefe), so kann
+die Berechnung mit der Tastenkombination \verb|Ctrl-C| bzw.
+\verb|Strg-C| unterbrochen werden. Auch das unterbrochene Programm
+ruft gegebenenfalls ein Nachfolgeprogramm auf.
+
+
+%%% ----------------------------------------------------------------------
+\subsection{Konfiguration}
+
+Die Konfiguration geschieht in zwei Schritten.
+In der Vorkonfiguration wird die Datei \verb|piecemaker2d.rc|
+gelesen. Diese Datei muß im gleichen Verzeichnis stehen, in dem
+auch das ausführbare Programm steht. In der
+Vorkonfiguration muß der Name der \verb|KONFIGURATIONSDATEI|
+angegeben werden, in der die problemspezifische
+Hauptkonfiguration stattfindet. In der
+Vorkonfiguration können auch weitere (global einzustellende)
+Parameter angegeben sein.
+
+Alternativ kann über den Kommandozeilenparameter \verb|--c=KONFIGURATIONSDATEI| 
+die Konfigurationsdatei spezifiziert werden. In diesem Fall wird die Vorkonfiguration 
+nicht ausgelesen, sondern direkt die angegebene Konfigurationsdatei. 
+
+Die Hauptkonfiguration enthält die problemspezifischen
+Parameter. Es müssen darin mindestens die fünf Parameter
+\verb|EINGABEDATEI|, \verb|AUSGABEDATEI|,
+\verb|MATERIAL|, \verb|MATERIALLAENGE| und \verb|MATERIALBREITE|
+angegeben werden.
+Die Hauptkonfiguration überschreibt Parameter, falls diese
+schon in der Vorkonfiguration angegeben waren.
+
+
+%%% ----------------------------------------------------------------------
+\subsection{Format der Konfigurationsdateien}
+
+Die Konfigurationsdateien können folgende Felder enthalten, siehe auch \verb|test\example02|:
+\begin{verbatim}
+/*
+ Kommentar ueber
+ mehrere Zeilen
+ */
+
+REM Kommentarzeile
+
+KONFIGURATIONSDATEI = <string> (nur in Vorkonfiguration)
+EINGABEDATEI = <string> oder "(stdin)"
+AUSGABEDATEI = <string> oder "(stdout)"
+SUCHTIEFE = <integer> größer 0, default 3, empfohlen maximal 7
+MATERIAL = <string> Name der Grundplatte
+MATERIALLAENGE = <integer> größer 0
+MATERIALBREITE = <integer> größer 0
+RICHTUNGEN = <integer> 1 oder 2, default 1
+BLATTDICKE = <integer> größer oder gleich 0
+SCHNITTZUGABE = <integer> größer oder gleich 0
+DRUCKSKALIERUNG = <interger> größer 0, default 50
+SEITENVORSCHUB = <integer> 0 oder größer
+INFO = <integer> zwischen 0 und 7
+AUFRUF = <string> 
+\end{verbatim}
+
+Für \verb|<string>| ist eine beliebige Zeichenkette anzugeben.
+Falls die Zeichenkette Sonderzeichen (wie \zB{} \verb|:|,
+\verb|\|, \verb|/|, usw.) oder Leerzeichen enthält,
+ist sie in Anführungszeichen (\verb|"|) einzuschließen.
+Für \verb|<integer>| ist eine positive Ganzzahl anzugeben.
+
+Sind Pfade zu berücksichtigen, so können diese vor die
+Dateinamen gehängt werden. Wird als Eingabedatei \verb|(stdin)|
+angegeben, so wird von \verb|stdin| (\ia{} Tastatur) gelesen.
+Wird als Ausgabedatei \verb|(stdout)| angegeben, so wird 
+auf \verb|stdout| (\ia{} Bildschirmfesnter) geschrieben.
+
+Als Suchtiefe ist ein Wert größer \verb|0| anzugeben, empfohlen sind
+Wert von \verb|1| bis \verb|7| (default ist \verb|3|).
+
+Als Richtung ist der Wert \verb|1| anzugeben, wenn die Teilstücke nur
+in der angegebenen Richtung ausgeschnitten werden dürfen. Das macht im allgemeinen
+Sinn, wenn die Oberfläche eine richtungsbezogene Textur enthält wie zum Beispiel
+bei Holz mit einer Maserung. Der Wert \verb|2| bedeutet, daß auch um $90^\circ$ gedrehte 
+Stücke erlaubt sind. Ist die Drehung aus optischen Gründen möglich, sollte man
+sie auch erlauben, da das Optimierungsergebnis besser und der Verschnitt
+kleiner wird.
+
+Die \verb|DRUCKSKALIERUNG| gibt an, wie groß die Schnittmuster
+ausgegeben werden. Je größer der Wert, desto größer der Ausdruck.
+Der Default-Wert von 50 heißt, dass ein Schnittmuster
+ungefähr 50 Zeichen breit dargestellt wird.
+
+Der Wert von \verb|SEITENVORSCHUB| gibt an, wie viele Zeilen
+maximal auf eine Seite ausgegeben werden. Durch Angabe dieses
+Wertes veranlaßt das Programm, Grafiken nur so auszugeben,
+daß sie auf eine Seite passen und nicht "`zerschnitten"' erscheinen
+(\dH{}, auf jeder Seite wird nach spätestens \verb|SEITENVORSCHUB|
+Zeilen ein Seitenvorschubszeichen ausgegeben). Voreingestellt 
+ist~\verb|0|, \dH{} kein Seitenvorschub.
+
+Die Angabe von \verb|INFO| kann entfallen. Ein Wert von~\verb|0|
+bedeutet, daß keine zusätzlichen Informationen während des
+Programmlaufs ausgegeben werden.
+Je größer der Wert, desto mehr Informationen werden ausgegeben.
+
+Durch Angabe eines Programmnamens unter \verb|AUFRUF| wird
+\verb|piecemaker2d| dazu veranlaßt, bei Programmende das angegebene Programm
+zu starten. Unter Umständen muß dabei der vollständige Pfad
+mit angegeben werden. Sind im Aufruf Sonderzeichen oder Leerzeichen
+enthalten, so muß der Aufruf in Anführungszeichen \verb|"| 
+eingeschlossen werden.
+
+%%% ----------------------------------------------------------------------
+\subsection{Beispielkonfiguration}
+
+Ein Beispiel einer Vorkonfigurationsdatei \verb|piecemaker2d.rc| im Verzeichnis \verb|bin|:
+\begin{verbatim}
+KONFIGURATIONSDATEI = "piecemaker2d.cnf"
+SUCHTIEFE = 4
+\end{verbatim}
+
+Ein Beispiel einer Hauptkonfigurationsdatei (\verb|piecemaker2d.cnf|):
+\begin{verbatim}
+rem Gebaude 417 Innenausstattung
+EINGABEDATEI = TEILELISTE.TXT
+AUSGABEDATEI = SCHNITTANWEISUNG.TXT
+SUCHTIEFE = 5
+MATERIAL = "Platte34  "
+MATERIALLAENGE = 3000
+MATERIALBREITE = 2050
+BLATTDICKE = 4
+RICHTUNGEN = 2
+SCHNITTZUGABE = 10 
+DRUCKSKALIERUNG = 50
+INFO = 0
+rem INFO = 7
+SEITENVORSCHUB = 0
+rem AUFRUF = "dir /a"
+rem AUFRUF = "ls -l"
+AUFRUF = "type SCHNITTANWEISUNG.TXT | more"
+rem AUFRUF = "cat SCHNITTE.TXT"
+\end{verbatim}
+
+Mit dieser Konfiguration liest das Zuschnittsoptimierungsprogramm 
+die zuzuschneidenden Teilstücke aus der Datei
+\verb|TEILELISTE.TXT| und schreibt das Ergebnis
+in die Datei \verb|SCHNITTANWEISUNG.TXT|.
+Es werden Schnittanweisungen für das Material \verb|Platte34  |
+der Länge 3000 mm und Breite 2050 mm berechnet. Als Schnittzulage
+werden 10 mm auf die Länge und Breite aller Stücke addiert.
+Am Ende der Schnittoptimierung wird das Programm oder die Anweisung
+\verb|type SCHNITTANWEISUNG.TXT | more| aufgerufen, das die Ergebnisdatei
+auf die Konsole ausgibt.
+
+Biespielaufrufe sind im Ordner Test angegeben. Die Kommandozeile zum Anruf kann \zB{}
+wie folgt aussehen:\\
+\verb|<Pfad>\bin\win32\piecemaker2d.exe --l=GERMAN --c=piecemaker2d.cnf|
+
+\newpage %%% <<<<<<<<<<<=====================
+%%% ----------------------------------------------------------------------
+\subsection{Format der Eingabedatei}
+
+Die Eingabedatei, im oberen Beispiel die Datei \verb|TEILELISTE.TXT|,
+enthält die Namen und Größenbeschreibungen der zuzuschneidenden
+Stücke.
+
+Format:
+\begin{verbatim}
+Nummer; Teilename (nicht benutzt); Material; Länge; Breite; Anzahl; weiterer Text
+\end{verbatim}
+
+Die Eingabedatei enthält mindestens sechs Felder, die alle 
+mit einem Semikolon (\verb|;|)
+abgeschlossen sind. Das erste Feld enthält die Nummer des Teilstücks,
+das dritte den Namen des Rohmaterials, das vierte die Länge des 
+Teilstücks, das fünfte die Breite des Teilstücks und das sechste
+die Anzahl benötigter Teilstücke. Die zweite Spalte dient zur Angabe
+eines Teilebezeichners, er wird von \verb|piecemaker2d| nicht benutzt,
+sollte aber mindestens ein Zeichen enthalten.
+Hinter der sechsten Spalte kann weiterer Text stehen, z.B. um zusätzliche 
+Angaben zu den Teilen zu geben. Dieser weitere Text wird aber ignoriert.
+
+
+Aus der Eingabedatei werden alle Zeilen ausgewertet, bei denen
+das dritte Feld mit dem in der Konfigurationsdatei angegebenen
+\verb|MATERIAL| übereinstimmt. Alle anderen Zeilen werden ignoriert.
+Ist eine Schnittoptimierung für verschiedene Materialien durchzuführen,
+so sind einfach mehrere Aufrufe mit jeweils passendem Parameter \verb|MATERIAL| 
+zu tätigen. (Die Teile können trotzdem in einer gesammelten Materialliste stehen.)
+
+Das Programm prüft nicht, ob Teile (mit eventuell 
+unterschiedlichen Größen) mehrfach unter demselben Namen in
+der Liste auftauchen. Dies ist zu vermeiden, da dann unter Umständen
+im Ergebnis nicht nachvollzogen werden kann, welches Teil an der
+jeweiligen Stelle gemeint ist.
+
+%\newpage %%% <<<<<<<<==============
+%%% ----------------------------------------------------------------------
+\subsection{Format der Ausgabedatei}
+
+Die Ausgabedatei enthält 
+\begin{enumerate}
+\item Eine Warnung, falls nicht alle Stücke untergebracht werden konnten.
+\item Der Gesamtverschnitt und die Gesamtzahl der benötigten Platten.
+\item Daten der geladenen Eingabedatei (Materialliste).
+\item Daten der geladenen Konfigurationsdatei (Originalplattengröße, 
+  Parameter).
+\item Eine Reihe von Schnittvorlagen, bestehend aus
+  \begin{enumerate}
+  \item Nummer der Schnittvorlage,
+  \item statistische Informationen (Verschnitt, Anzahl 
+    untersuchter Schnittaufteilungen),
+  \item Menge der Platten, die auf diese Weise zuzuschneiden sind,
+  \item eine geometrische Darstellung der Schnittaufteilung.
+  \end{enumerate}
+\end{enumerate}
+
+Die Informationen über die geladene Konfiguration und
+die Stücke der Eingabedatei sind auf jeden Fall zu überprüfen,
+um einen eventuellen Lesefehler der Eingabedaten festzustellen.
+
+Die Schnittvorlage selbst dokumentiert in eindeutiger Weise, 
+mit welchen Schnitten
+und in welcher Reihenfolge die Originalplatte in die angegebenen Teilstücke 
+zerlegt werden muß. Es wird näherungsweise versucht, die Proportionen
+der Teilstücke darzustellen. Es wird für jedes Stück
+jeweils die Stücknummer und, falls das Feld groß genug ist, die Länge und
+Breite angegeben, wobei eine eventuelle Schnittzugabe schon eingerechnet ist.
+Stücke, die in der gleichen Orientierung wie in der Teileliste angegeben
+auszuschneiden sind, werden durch \verb|N| (Nummer) markiert. Um $90^\circ$
+gedrehte Stücke sind durch \verb|Z| (als Symbol für ein gedrehtes \verb|N|)
+markiert, wobei Länge und Breite entsprechend vertauscht sind.
+%Reststücke sind durch \verb|R| markiert. 
+
+%\newpage %%% <<<<<<<<==============
+Beispiel:
+\begin{verbatim}
+Gesamtzahl benoetigter Platten: 51
+
+Gesamtverschnitt: 58401541 qmm = 18.62 %
+Ausgangsmaterial:
+Name: "Platte34  ", Laenge x: 3000 mm, Breite y: 2050 mm
+
+Schnittzugabe: 10 mm
+Saegeblattstaerke: 4 mm
+Saegerichtung: 2, d.h. 90 Grad Drehung moeglich.
+(Maximale Suchtiefe bei der Berechnung: 5)
+(Resultierende Suchtiefe bei der Berechnung: 4)
+Druckskalierung: 50
+
+Stueckliste aus der Eingabedatei:
+Name: "1   ", Laenge: 2159 mm, Breite: 0779 mm, Anzahl: 8
+Name: "2   ", Laenge: 1059 mm, Breite: 0779 mm, Anzahl: 9
+Name: "3   ", Laenge: 0759 mm, Breite: 0779 mm, Anzahl: 6
+Name: "4   ", Laenge: 0609 mm, Breite: 0779 mm, Anzahl: 2
+Name: "5   ", Laenge: 2159 mm, Breite: 0760 mm, Anzahl: 12
+Name: "6   ", Laenge: 1056 mm, Breite: 1096 mm, Anzahl: 25
+Name: "7   ", Laenge: 2196 mm, Breite: 0602 mm, Anzahl: 10
+...
+
+Schnittvorlage Nr 1:
+(Verschnitt: 119478 qmm = 1.94 %; 0116098 Versuche)
+Menge: 2
+
+*-----------------------------------------------------*
+|N7                                   |N14        |   |
+|L2206                                |L0656      |   |
+|W0612                                |W0592      |   |
+|                                     |           |   |
+|                                     |           |   |
+|                                     |           |   |
+|                                     |           |   |
+|-------------------------------------|---------------|
+|N17                                  |Z4            ||
+|L2206                                |L0789         ||
+|W0508                                |W0619         ||
+|                                     |              ||
+|                                     |              ||
+|                                     |              ||
+|-------------------------------------|              ||
+|N7                                   |--------------||
+|L2206                                |N3           |||
+|W0612                                |L0769        |||
+|                                     |W0789        |||
+|                                     |             |||
+|                                     |             |||
+|                                     |             |||
+|-------------------------------------|             |||
+|N20                                  |             |||
+|L2206                                |             |||
+|W0151                                |-------------|||
+|-------------------------------------|             |||
+|N20                                  |             |||
+|L2206                                |             |||
+|W0151                                |             |||
+*-----------------------------------------------------*
+
+...
+\end{verbatim}
+
+Das Beispiel enthält die erste (von ca. 20) Schnittanweisungen
+des Beispiels \verb|example02|. Die durchgezogenen Linien geben
+an, wie zuerst geschnitten werden muß. Die einzelnen Felder
+enthalten die Nummer, die Länge und die Breite der so erhaltenen
+Teilstücke. Eine eventuell vorhandene Schnittzugabe ist dabei
+schon einberechnet. Ist ein um $90^\circ$ gedrehtes Stück auszuschneiden,
+so ist dieses Stück statt durch \verb|N| durch \verb|Z| markiert und 
+Länge und Breite sind entsprechend vertauscht. 
+Vor jeder Schnittvorlage erscheinen
+Informationen über den Verschnitt (absolut in 
+Quadratmillimeter und relativ in Prozent) und die Anzahl
+untersuchter Schnittmöglichkeiten für gerade diese Schnittvorlage.
+Unter "`Menge"' ist angegeben, wie viele Lagerplatten
+nach dieser Schnittvorlage zuzuschneiden sind.
+%Die Größe der
+%Felder entspricht ganz grob den realen Proportionen, allerdings
+%erscheinen kleine Stücke überproportional, da in jedem Fall
+%die Stücknummer angegeben werden muß.
+
+Vor den Schnittvorlagen werden zur Kontrolle die gelesenen 
+Daten ausgegeben (Stückliste der Einzelteile, Material und
+Größe der Ausgangsplatte, Schnittzugabe und Sägeblattdicke).
+Hierbei ist bei den Stückmaßen die Schnittzugabe noch
+\emph{nicht} mit einberechnet.
+
+%Am Ende der Ausgabe erfolgt eine Berechnung des Gesamtverschnitts
+%für die Summe aller Schnittvorlagen.
+
+%%% ======================================================================
+\section{Fehlerbehebung}
+
+\begin{description}
+\item[Programm startet nicht]
+  Wenn die Vorkonfiguration nicht gelesen werden kann, so
+  kann das Programm nicht starten. Es gibt lediglich eine
+  Fehlermeldung aus.
+\item[Programm terminiert nicht]
+  Sind sehr viele (verschiedene) Stücke zuzuschneiden, so ergibt sich
+  bei der Bestimmung eines Zuschnitts ein hoher Rechenaufwand.
+  Dauert die Berechnung zu lange, so kann das Programm mit der 
+  Tastenkombination \verb|Ctrl-C| bzw. \verb|Strg-C| angehalten
+  werden. Bei einem erneuten Durchlauf ist in der Konfiguration 
+  eine kleinere \verb|SUCHTIEFE| (bis minimal 1) einzustellen. 
+  Berechnungen mit kleiner Suchtiefe ergeben im allgemeinen 
+  jedoch eine schlechtere Lösung (das heißt, eine Lösung mit 
+  höherem Verschnitt).
+\end{description}
+
+Bitte senden Sie Problembeschreibungen, Kommentare und Vorschläge an
+\texttt{piecemaker2d@maennle.org} per E-Mail.
+
+%%% ======================================================================
+\section{Algorithmus}
+
+Der Algorithmus besteht aus einer zweistufigen
+Suche nach einer möglichst guten Lösung (Schnittaufteilung).
+Gut heißt dabei, mit wenig Verschnitt, das heißt, mit
+einer minimalen Anzahl von Originalplatten (Lagerplatten).
+
+Die innere Stufe bestimmt eine möglichst gute Aufteilung
+\emph{einer einzelnen} Originalplatte unter Betrachtung der
+gesuchten Teilstücke. Die äußere Stufe besteht darin, die
+innere Stufe solange zu wiederholen, bis alle Teilstücke 
+zugeschnitten wurden.
+
+Bei der Aufteilung einer einzelnen Originalplatte (innere Stufe) wird 
+in einer Tiefensuche wie folgt verfahren:
+\begin{itemize}
+\item bestimme das größte Teilstück, das in die 
+  Originalplatte paßt
+\item bestimme die Schnittanweisungen, um dieses Stück herauszuschneiden
+  %(mit den Möglichkeiten \texttt{L}, \texttt{T}, \texttt{-},
+  %\texttt{|} und \texttt{o})
+\item führe die Aufteilung für die erhaltenen Reste der 
+  Originalplatte weiter (das heißt, beginne bei 1., wobei die
+  erhaltenen Reste nun die weiter zuzuschneidenden Originalplatten 
+  darstellen)
+\end{itemize}
+Unter Umständen werden bei der Suche nach einer guten 
+Aufteilung mehrere Möglichkeiten untersucht. Die Anzahl der
+Möglichkeiten (Suchversuche), die bei jedem Schritt untersucht 
+werden, ist bei der Konfiguration
+durch den Parameter \verb|SUCHTIEFE| angebbar.
+Je mehr Suchversuche durchgeführt werden, desto besser ist 
+das Ergebnis hinsichtlich des Verschnitts. (Unter Umständen entstehen
+aber mehr und kompliziertere Schnittanweisungen.)
+Durch den rekursiven Abstieg ist jedoch zu beachten, daß der
+Rechenaufwand ungefähr exponentiell mit den Suchversuchen 
+steigt und die Anzahl der Suchversuche deshalb nicht beliebig
+groß gewählt werden kann.
+
+Der beschriebene Algorithmus führt in der Regel zu guten Ergebnissen
+bei vertretbarem Rechenaufwand.
+Es kann jedoch selbst bei größter Suchtiefe
+keine Optimalität des Ergebnisses garantiert werden.
+
+Die Aufteilung einer einzelnen Originalplatte (innere Stufe)
+ergibt für das Beispiel 
+\begin{verbatim}
+original [1400x500]
+pieces 4
+2 [400x400]
+2 [300x300]
+1 [600x100]
+1 [500x200]
+\end{verbatim}
+(bei Schnittzugabe und Blattdicke 0)
+keine optimale Aufteilung. Die Stücke haben alle in einer einzelnen
+Originalplatte Platz. Die optimale Aufteilung wird nicht gefunden, da
+die Betrachtung von Einzelstücken in diesem Fall nicht zum optimalen
+Ergebnis führt.
+Es müßten noch weitere Schnittmöglichkeiten (hier: erster
+vertikaler Schnitt bei der Länge~800) untersucht werden.
+
+Auch eine optimale Aufteilung der einzelnen Originalplatten
+kann zu einer (global gesehen) nichtoptimalen Aufteilung
+führen.
+Beim Beispiel sind beim Zuschnittsproblem
+\begin{verbatim}
+original [1500x500]
+pieces 2
+30 [300x500]
+30 [200x400]
+\end{verbatim}
+alle Stücke in~10 Originalplatten unterbringbar.
+Das Verfahren findet aber eine Aufteilung in~11 Platten,
+da zuerst alle \verb|500x300|-Platten und dann erst alle
+\verb|200x400|-Platten zugeschnitten werden.
+%Eine Vermeidung dieser Nichtoptimalität erscheint äußerst
+%schwierig und rechenaufwendig.
+
+In der Praxis tauchen diese Fälle, bei denen das optimale 
+Ergebnis nicht gefunden wird, selten auf, so daß zwar keine
+optimale, in der Regel aber eine sehr gute Zuschnittslösung
+gefunden wird.
+
+\end{document} %%% **************************************************
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% $Log: manual_piecemaker2d_3x0x14_de.tex $
+% Revision 1.1  2020/03/30 16:30:16  family
+% Initial revision
+%
+% 
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%%% EOF

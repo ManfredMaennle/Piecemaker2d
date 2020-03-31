@@ -1,0 +1,28 @@
+Nr. ;Bezeichnung      ;Material  ;Anz;Laenge;Breite;Kommentar; ; ; ; ; ;
+1   ;Boden            ;Platte34  ;  8;  2159;   779; versiegelt; ; ; ; ; ;
+2   ;Boden            ;Platte34  ;  9;  1059;   779; versiegelt; ; ; ; ; ;
+3   ;Bodenplatte      ;Platte34  ;  6;   759;   779; ; ; ; ; ; ;
+4   ;Bodenplatte      ;Platte34  ;  2;   609;   779; ; ; ; ; ; ;
+5   ;Boden            ;Platte34  ; 12;  2159;   760; ; ; ; ; ; ;
+6   ;Ruekwand         ;Platte34  ; 25;  1056;  1096; ; ; ; ; ; ;
+7   ;Regalboden       ;Platte34  ; 10;  2196;   602; ; ; ; ; ; ;
+8   ;Bodenplatte      ;Platte34  ;  5;  1059;   760; ; ; ; ; ; ;
+10  ;Regalboden       ;Platte34  ;  5;  1096;   602; ; ; ; ; ; ;
+11  ;Bodenplatte      ;Platte34  ;  4;   609;   760; ; ; ; ; ; ;
+12  ;Ruekwand         ;Platte34  ;  2;  1056;   646; dunkel lackiert; ; ; ; ; ;
+13  ;Regalboden oben  ;Platte34  ; 22;   646;   498; ; ; ; ; ; ;
+14  ;Regalboden unten ;Platte34  ; 22;   646;   582; ; ; ; ; ; ;
+16  ;Ruekwand         ;Platte34  ;  4;  1477;  1096; ; ; ; ; ; ;
+17  ;Regalboden oben  ;Platte34  ;  2;  2196;   498; ; ; ; ; ; ;
+18  ;Regalboden unten ;Platte34  ;  2;  2196;   582; ; ; ; ; ; ;
+19  ;Seiten           ;Platte34  ;  2;   799;   576; ; ; ; ; ; ;
+20  ;Boden            ;Platte34  ; 10;  2196;   141; unversiegelt; ; ; ; ; ;
+22  ;Boden            ;Platte34  ; 10;  2196;   604; unversiegelt; ; ; ; ; ;
+23  ;Boden            ;Platte34  ; 20;  2196;    40; unversiegelt; ; ; ; ; ;
+24  ;Platte           ;Platte34  ; 22;  2076;  2000; ; ; ; ; ; ;
+29  ;Bodenplatte      ;Platte34  ;  2;  1959;   750; ; ; ; ; ; ;
+30  ;Ruekwand         ;Platte34  ;  2;  1056;  1996; ; ; ; ; ; ;
+31  ;Regalboden       ;Platte34  ;  2;  1596;   602; ; ; ; ; ; ;
+32  ;Aufl.Abschlusslat;Platte34  ;  2;  1059;   760; ; ; ; ; ; ;
+33  ;Aufl.Platte oben ;Platte34  ;  3;  2199;   399; ; ; ; ; ; ;
+

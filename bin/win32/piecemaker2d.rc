@@ -1,0 +1,5 @@
+
+REM KONFIGURATIONSDATEI = D:\projects\loft_417\piecemaker2d.cnf
+REM KONFIGURATIONSDATEI = "piecemaker2d.cnf"
+
+CONFIG_FILENAME = "piecemaker2d.cnf"
